@@ -2,8 +2,11 @@
 <persistence version="2.1"
              xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
-    <persistence-unit name="ProvaJPA" transaction-type="RESOURCE_LOCAL">
-        <class><!-- Entity Manager Class Name --></class>
+    <persistence-unit name="ProvaEventi" transaction-type="RESOURCE_LOCAL">
+        <class>entities.Persona</class>
+        <class>entities.Evento</class>
+        <class>entities.Location</class>
+        <class>entities.Partecipazione</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/B-W3-D3" />
