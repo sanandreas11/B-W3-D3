@@ -1,22 +1,26 @@
 package dao;
 
 import entities.Partecipazione;
+import entities.Evento;
 import jakarta.persistence.EntityManager;
+import java.util.List;
 
 public class PartecipazioneDAO {
-    private EntityManager em;
+    private final EntityManager em;
 
     public PartecipazioneDAO(EntityManager em) {
         this.em = em;
     }
 
-    public void salva(Partecipazione partecipazione) {
+    public void save(Partecipazione p) {
         em.getTransaction().begin();
-        em.persist(partecipazione);
+        em.persist(p);
         em.getTransaction().commit();
     }
 
-    public Partecipazione trova(Long id) {
-        return em.find(Partecipazione.class, id);
+    public List<Partecipazione> getPartecipazioniDaConfermarePerEvento(Evento evento) {
+        return em.createNamedQuery("Partecipazione.getDaConfermarePerEvento", Partecipazione.class)
+                .setParameter("evento", evento)
+                .getResultList();
     }
 }

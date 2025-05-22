@@ -5,7 +5,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-public class Evento {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo_evento")
+@NamedQueries({
+        @NamedQuery(name = "Evento.getEventiSoldOut", query = "SELECT e FROM Evento e WHERE SIZE(e.partecipazioni) = e.numeroMassimoPartecipanti")
+})
+public abstract class Evento {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -14,62 +20,27 @@ public class Evento {
     private LocalDate data;
 
     @ManyToOne
-    @JoinColumn(name = "location_id")
     private Location location;
 
-    @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
+    private int numeroMassimoPartecipanti;
+
+    @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL)
     private List<Partecipazione> partecipazioni;
 
-    public Evento() {
-    }
+    // Getters e setters
+    public Long getId() { return id; }
+    public String getTitolo() { return titolo; }
+    public void setTitolo(String titolo) { this.titolo = titolo; }
 
-    // Costruttori, getter e setter
+    public LocalDate getData() { return data; }
+    public void setData(LocalDate data) { this.data = data; }
 
-    public Evento(Long id, String titolo, LocalDate data, Location location, List<Partecipazione> partecipazioni) {
-        this.id = id;
-        this.titolo = titolo;
-        this.data = data;
-        this.location = location;
-        this.partecipazioni = partecipazioni;
-    }
+    public Location getLocation() { return location; }
+    public void setLocation(Location location) { this.location = location; }
 
-    public Long getId() {
-        return id;
-    }
+    public int getNumeroMassimoPartecipanti() { return numeroMassimoPartecipanti; }
+    public void setNumeroMassimoPartecipanti(int numero) { this.numeroMassimoPartecipanti = numero; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitolo() {
-        return titolo;
-    }
-
-    public void setTitolo(String titolo) {
-        this.titolo = titolo;
-    }
-
-    public LocalDate getData() {
-        return data;
-    }
-
-    public void setData(LocalDate data) {
-        this.data = data;
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
-    }
-
-    public List<Partecipazione> getPartecipazioni() {
-        return partecipazioni;
-    }
-
-    public void setPartecipazioni(List<Partecipazione> partecipazioni) {
-        this.partecipazioni = partecipazioni;
-    }
+    public List<Partecipazione> getPartecipazioni() { return partecipazioni; }
+    public void setPartecipazioni(List<Partecipazione> partecipazioni) { this.partecipazioni = partecipazioni; }
 }

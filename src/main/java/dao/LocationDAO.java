@@ -4,19 +4,15 @@ import entities.Location;
 import jakarta.persistence.EntityManager;
 
 public class LocationDAO {
-    private EntityManager em;
+    private final EntityManager em;
 
     public LocationDAO(EntityManager em) {
         this.em = em;
     }
 
-    public void salva(Location location) {
+    public void save(Location l) {
         em.getTransaction().begin();
-        em.persist(location);
+        em.persist(l);
         em.getTransaction().commit();
-    }
-
-    public Location trova(Long id) {
-        return em.find(Location.class, id);
     }
 }

@@ -4,19 +4,15 @@ import entities.Persona;
 import jakarta.persistence.EntityManager;
 
 public class PersonaDAO {
-    private EntityManager em;
+    private final EntityManager em;
 
     public PersonaDAO(EntityManager em) {
         this.em = em;
     }
 
-    public void salva(Persona persona) {
+    public void save(Persona l) {
         em.getTransaction().begin();
-        em.persist(persona);
+        em.persist(l);
         em.getTransaction().commit();
-    }
-
-    public Persona trova(Long id) {
-        return em.find(Persona.class, id);
     }
 }

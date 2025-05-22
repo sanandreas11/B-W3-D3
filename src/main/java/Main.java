@@ -1,75 +1,80 @@
-import enumerations.Sesso;
+import dao.*;
+import entities.*;
+import enumerations.*;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
-import dao.PersonaDAO;
-import dao.EventoDAO;
-import dao.LocationDAO;
-import dao.PartecipazioneDAO;
-
-import entities.Persona;
-import entities.Evento;
-import entities.Location;
-import entities.Partecipazione;
-import entities.Partecipazione.Stato;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("ProvaJPA");
+
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("eventiPU");
         EntityManager em = emf.createEntityManager();
 
-        PersonaDAO personaDAO = new PersonaDAO(em);
-        EventoDAO eventoDAO = new EventoDAO(em);
-        LocationDAO locationDAO = new LocationDAO(em);
-        PartecipazioneDAO partecipazioneDAO = new PartecipazioneDAO(em);
+        // Inizializzo i DAO
+        LocationDAO locationdao = new LocationDAO(em);
+        PersonaDAO personadao = new PersonaDAO(em);
+        EventoDAO eventodao = new EventoDAO(em);
+        PartecipazioneDAO partecipazionedao = new PartecipazioneDAO(em);
 
-        // Crea oggetti
+        // 1. Creo e salvo una location
         Location location = new Location();
-        location.setNome("Palazzo Congressi");
-        location.setCitta("Milano");
+        location.setNome("Auditorium Parco della Musica");
+        location.setCitta("Roma");
+        locationdao.save(location);
 
-        Evento evento = new Evento();
-        evento.setTitolo("Tech Talk");
-        evento.setData(LocalDate.of(2025, 6, 10));
-        evento.setLocation(location);
-
+        // 2. Creo e salvo una persona
         Persona persona = new Persona();
-        persona.setNome("Luca");
-        persona.setCognome("Bianchi");
-        persona.setEmail("luca@email.com");
-        persona.setDataNascita(LocalDate.of(1990, 5, 15));
-        persona.setSesso(Sesso.M);
-
-        Partecipazione partecipazione = new Partecipazione();
-        partecipazione.setEvento(evento);
-        partecipazione.setPersona(persona);
-        partecipazione.setStato(Stato.CONFERMATA);
-
-        evento.setPartecipazioni(new ArrayList<>());
+        persona.setNome("Giulia");
+        persona.setCognome("Rossi");
+        persona.setEmail("giulia.rossi@email.com");
+        persona.setDataNascita(LocalDate.of(1992, 3, 25));
+        persona.setSesso(Sesso.F);
         persona.setPartecipazioni(new ArrayList<>());
+        personadao.save(persona);
 
-        evento.getPartecipazioni().add(partecipazione);
-        persona.getPartecipazioni().add(partecipazione);
-        
-        try {
-            em.getTransaction().begin();
+        // 3. Creo e salvo un concerto
+        Concerto concerto = new Concerto();
+        concerto.setTitolo("Concerto di Musica Classica");
+        concerto.setData(LocalDate.of(2025, 7, 15));
+        concerto.setNumeroMassimoPartecipanti(1); // piccolo per test sold-out
+        concerto.setLocation(location);
+        concerto.setGenere(GenereConcerto.CLASSICO);
+        concerto.setInStreaming(true);
+        eventodao.save(concerto);
 
-            locationDAO.salva(location);
-            eventoDAO.salva(evento);
-            personaDAO.salva(persona);
-            partecipazioneDAO.salva(partecipazione);
+        // 4. Creo e salvo una partecipazione
+        Partecipazione partecipazione = new Partecipazione();
+        partecipazione.setPersona(persona);
+        partecipazione.setEvento(concerto);
+        partecipazione.setStato(Partecipazione.Stato.CONFERMATA);
+        partecipazionedao.save(partecipazione);
 
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            em.getTransaction().rollback();
-            e.getMessage();
-        } finally {
-            em.close();
-            emf.close();
-        }
+        // 5. Eseguo alcune query DAO
+
+        System.out.println("\n-- Concerti in streaming --");
+        List<Concerto> concertiStreaming = eventodao.getConcertiInStreaming(true);
+        concertiStreaming.forEach(c -> System.out.println(c.getTitolo()));
+
+        System.out.println("\n-- Concerti per genere CLASSICO --");
+        List<Concerto> concertiClassici = eventodao.getConcertiPerGenere(GenereConcerto.CLASSICO);
+        concertiClassici.forEach(c -> System.out.println(c.getTitolo()));
+
+        System.out.println("\n-- Eventi sold-out --");
+        List<Evento> eventiSoldOut = eventodao.getEventiSoldOut();
+        eventiSoldOut.forEach(e -> System.out.println(e.getTitolo()));
+
+        System.out.println("\n-- Partecipazioni da confermare per il concerto --");
+        List<Partecipazione> daConfermare = partecipazionedao.getPartecipazioniDaConfermarePerEvento(concerto);
+        daConfermare.forEach(p -> System.out.println(p.getPersona().getNome()));
+
+        // Chiusura risorse
+        em.close();
+        emf.close();
     }
 }
